@@ -21,6 +21,8 @@ using System.Windows.Media;
  * Created: 07/11/2015 17:27:41
  * 
  * Notes:
+ * This 'GameModule' uses some MonoGame game code and 
+ * http://blogs.msdn.com/b/nicgrave/archive/2011/03/25/wpf-hosting-for-xna-game-studio-4-0.aspx
  * -------------------------------------------------------*/
 
 namespace MonoGame.Interop
@@ -112,7 +114,7 @@ namespace MonoGame.Interop
         }
 
         /// <summary>
-        /// 
+        /// Event raised when the GameModule is fully loaded.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -137,7 +139,7 @@ namespace MonoGame.Interop
         }
 
         /// <summary>
-        /// 
+        /// Event raised when the GameModule is unloaded.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

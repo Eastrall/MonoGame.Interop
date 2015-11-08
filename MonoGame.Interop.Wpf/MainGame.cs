@@ -20,7 +20,7 @@ namespace MonoGame.Interop.Wpf
 {
     public class MainGame : GameModule
     {
-        CubePrimitive cube;
+        private CubePrimitive cube;
 
         public MainGame()
             : base()
@@ -37,11 +37,15 @@ namespace MonoGame.Interop.Wpf
 
         protected override void LoadContent()
         {
+            // TODO: Load content
+
             base.LoadContent();
         }
 
         protected override void Update(GameTime gameTime)
         {
+            // TODO: Update logic
+
             base.Update(gameTime);
         }
 
@@ -49,7 +53,7 @@ namespace MonoGame.Interop.Wpf
         {
             this.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // directly stolem from Nick Gravelyn's sample (http://blogs.msdn.com/b/nicgrave/archive/2011/03/25/wpf-hosting-for-xna-game-studio-4-0.aspx)
+            // from Nick Gravelyn's sample (http://blogs.msdn.com/b/nicgrave/archive/2011/03/25/wpf-hosting-for-xna-game-studio-4-0.aspx)
 
             // Compute some values for the cube rotation
             var time = (float)gameTime.TotalGameTime.TotalSeconds;

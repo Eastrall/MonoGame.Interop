@@ -7,16 +7,17 @@ Only availiable for DirectX plateforms.
 Current status
 ----
 
+MonoGame.Interop handles:
 
+- Rendering
+- Mouse input
 
 To do list
 ----
 
-- Review update logic
-- General speed optimisation
-- Mouse Input
 - Keyboard input
 - Component system (similar as MonoGame's system)
+- General improvements
 
 How to use
 ----

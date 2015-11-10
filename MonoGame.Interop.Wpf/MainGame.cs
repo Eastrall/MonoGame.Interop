@@ -50,8 +50,12 @@ namespace MonoGame.Interop.Wpf
             // TODO: Update logic
             MouseState _state = Input.WPFMouse.GetState();
 
-            if (_state.LeftButton == ButtonState.Pressed)
+            if (_state.LeftButton == ButtonState.Pressed && _state.RightButton == ButtonState.Released)
                 this.backcolor = Color.Green;
+            else if (_state.LeftButton == ButtonState.Released && _state.RightButton == ButtonState.Pressed)
+                this.backcolor = Color.Yellow;
+            else if (_state.LeftButton == ButtonState.Pressed && _state.RightButton == ButtonState.Pressed)
+                this.backcolor = Color.Blue;
             else
                 this.backcolor = Color.CornflowerBlue;
 

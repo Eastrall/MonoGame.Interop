@@ -1,20 +1,17 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Interop.Hosting;
+using MonoGame.Interop.Input;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Input;
-using MonoGame.Interop.Input;
-using Microsoft.Xna.Framework.Input;
+using System.Windows.Media;
 
 /*--------------------------------------------------------
  * GameModule.cs
@@ -84,7 +81,7 @@ namespace MonoGame.Interop
         /// <summary>
         /// Gets or sets the current ContentManager.
         /// </summary>
-        public ContentManager ContentManager { get; private set; }
+        public ContentManager ContentManager { get; set; }
 
         /// <summary>
         /// Gets the collection of GameComponents owned by the game.
@@ -99,7 +96,7 @@ namespace MonoGame.Interop
         /// <summary>
         /// Gets or sets a value indicating whether to use fixed time steps.
         /// </summary>
-        public Boolean IsFixedTimeStep { get; private set; }
+        public Boolean IsFixedTimeStep { get; set; }
 
         internal MouseState MouseState { get; private set; }
 
@@ -118,8 +115,7 @@ namespace MonoGame.Interop
             this.gameTimer = new Stopwatch();
             this.Loaded += this.GameModule_Loaded;
             this.Unloaded += this.GameModule_Unloaded;
-
-            WPFMouse.SetUIElement(this);
+            
             WPFMouse.PrimaryGameModule = this;
             this.MouseMove += this.UpdateMouse;
             this.MouseDown += this.UpdateMouse;
@@ -214,7 +210,9 @@ namespace MonoGame.Interop
 
             // Create new render target and set it to the image back buffer
             this.renderTarget = new RenderTarget2D(this.GraphicsDevice, _width, _height, false, SurfaceFormat.Bgr32, DepthFormat.Depth24Stencil8, 0, RenderTargetUsage.DiscardContents, true);
+            this.image.Lock();
             this.image.SetBackBuffer(this.renderTarget);
+            this.image.Unlock();
         }
 
         Task t;
@@ -265,14 +263,10 @@ namespace MonoGame.Interop
             if (this.lastRenderingTime != _renderingEventArgs.RenderingTime || this.resetImageBackBuffer == true)
             {
                 this.lastRenderingTime = _renderingEventArgs.RenderingTime;
-
-                //this.Update(new GameTime(this.gameTimer.Elapsed, this.lastRenderingTime));
-                //this.UpdateGameTime();
-
                 this.GraphicsDevice.SetRenderTarget(this.renderTarget);
-
                 this.Draw(gameTime);
                 this.GraphicsDevice.Flush();
+                this.GraphicsDevice.SetRenderTarget(null);
             }
 
             this.image.Invalidate();
@@ -401,6 +395,11 @@ namespace MonoGame.Interop
 
         #region INPUT UPDATE
 
+        /// <summary>
+        /// Update mouse state.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UpdateMouse(Object sender, MouseEventArgs e)
         {
             if (this.IsVisible == false || this.IsMouseDirectlyOver == false || e.Handled)
@@ -419,6 +418,11 @@ namespace MonoGame.Interop
                 this.GetButtonState(e.RightButton), ButtonState.Released, ButtonState.Released);
         }
 
+        /// <summary>
+        /// Converts a <see cref="MouseButtonState"/> into a <see cref="ButtonState"/>.
+        /// </summary>
+        /// <param name="mouseState">Window mouse button state.</param>
+        /// <returns></returns>
         private ButtonState GetButtonState(MouseButtonState mouseState)
         {
             return mouseState == MouseButtonState.Pressed ? ButtonState.Pressed : ButtonState.Released;

@@ -7,6 +7,16 @@
         mc:Ignorable="d"
         Title="MonoGame.Interop.Wpf" Height="350" Width="525">
     <Grid>
-        <local:MainGame SnapsToDevicePixels="true" Stretch="Fill" />
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.2*" />
+            <ColumnDefinition Width="0.8*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0">
+            <Label Content="Stack panel" />
+        </StackPanel>
+        
+        <local:MainGame Grid.Column="1" SnapsToDevicePixels="true" Stretch="Fill" />
     </Grid>
 </Window>

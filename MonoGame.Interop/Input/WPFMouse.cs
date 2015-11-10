@@ -30,25 +30,12 @@ namespace MonoGame.Interop.Input
 
         #endregion
 
-        #region PROPERTIES
-
-
-
-        #endregion
-
-        #region CONSTRUCTORS
-
-
-
-        #endregion
-
         #region METHODS
 
-        public static void SetUIElement(UIElement element)
-        {
-            UIElement = element;
-        }
-
+        /// <summary>
+        /// Gets the current mouse state.
+        /// </summary>
+        /// <returns></returns>
         public static MouseState GetState()
         {
             return PrimaryGameModule != null ? PrimaryGameModule.MouseState : default(MouseState);

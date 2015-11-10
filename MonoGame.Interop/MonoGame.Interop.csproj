@@ -71,6 +71,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -81,14 +82,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameModule.cs" />
+    <Compile Include="GameModuleUpdater.cs" />
     <Compile Include="Hosting\D3D11Image.cs" />
     <Compile Include="Hosting\D3D9.cs" />
     <Compile Include="Hosting\GraphicsDeviceManager.cs" />
+    <Compile Include="Input\WPFKeyboard.cs" />
+    <Compile Include="Input\WPFMouse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Input\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

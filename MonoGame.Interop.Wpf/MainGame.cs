@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Interop.Wpf.Primitives;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace MonoGame.Interop.Wpf
         public MainGame()
             : base()
         {
+            this.Focus();
         }
 
         protected override void Initialize()
@@ -41,17 +43,24 @@ namespace MonoGame.Interop.Wpf
 
             base.LoadContent();
         }
+        private Color backcolor = Color.CornflowerBlue;
 
         protected override void Update(GameTime gameTime)
         {
             // TODO: Update logic
+            MouseState _state = Input.WPFMouse.GetState();
+
+            if (_state.LeftButton == ButtonState.Pressed)
+                this.backcolor = Color.Green;
+            else
+                this.backcolor = Color.CornflowerBlue;
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            this.GraphicsDevice.Clear(Color.CornflowerBlue);
+            this.GraphicsDevice.Clear(this.backcolor);
 
             // from Nick Gravelyn's sample (http://blogs.msdn.com/b/nicgrave/archive/2011/03/25/wpf-hosting-for-xna-game-studio-4-0.aspx)
 

@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Input;
+using MonoGame.Interop.Input;
+using Microsoft.Xna.Framework.Input;
 
 /*--------------------------------------------------------
  * GameModule.cs
@@ -46,6 +49,8 @@ namespace MonoGame.Interop
 
         private TimeSpan targetElapsedTime = TimeSpan.FromSeconds(1f / 60f); // 60fps
         private TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500f);
+
+        private Boolean isLoaded;
 
         #endregion
 
@@ -96,6 +101,8 @@ namespace MonoGame.Interop
         /// </summary>
         public Boolean IsFixedTimeStep { get; private set; }
 
+        internal MouseState MouseState { get; private set; }
+
         #endregion
 
         #region CONSTRUCTORS
@@ -111,6 +118,12 @@ namespace MonoGame.Interop
             this.gameTimer = new Stopwatch();
             this.Loaded += this.GameModule_Loaded;
             this.Unloaded += this.GameModule_Unloaded;
+
+            WPFMouse.SetUIElement(this);
+            WPFMouse.PrimaryGameModule = this;
+            this.MouseMove += this.UpdateMouse;
+            this.MouseDown += this.UpdateMouse;
+            this.MouseUp += this.UpdateMouse;
         }
 
         /// <summary>
@@ -204,6 +217,8 @@ namespace MonoGame.Interop
             this.image.SetBackBuffer(this.renderTarget);
         }
 
+        Task t;
+
         /// <summary>
         /// Begin rendering the game.
         /// </summary>
@@ -214,6 +229,11 @@ namespace MonoGame.Interop
 
             CompositionTarget.Rendering += this.Render;
             this.gameTimer.Start();
+            Task.Factory.StartNew(() =>
+            {
+                while (this.gameTimer.IsRunning)
+                    this.UpdateGameTime();
+            });
         }
 
         /// <summary>
@@ -246,7 +266,9 @@ namespace MonoGame.Interop
             {
                 this.lastRenderingTime = _renderingEventArgs.RenderingTime;
 
-                this.UpdateGameTime();
+                //this.Update(new GameTime(this.gameTimer.Elapsed, this.lastRenderingTime));
+                //this.UpdateGameTime();
+
                 this.GraphicsDevice.SetRenderTarget(this.renderTarget);
 
                 this.Draw(gameTime);
@@ -374,7 +396,34 @@ namespace MonoGame.Interop
                 this.GraphicsDevice = null;
             }
         }
-        
+
+        #endregion
+
+        #region INPUT UPDATE
+
+        private void UpdateMouse(Object sender, MouseEventArgs e)
+        {
+            if (this.IsVisible == false || this.IsMouseDirectlyOver == false || e.Handled)
+                return;
+
+            e.Handled = true;
+            WPFMouse.Position = e.GetPosition(this);
+
+            if (e is MouseWheelEventArgs)
+                WPFMouse.MouseScrollWheelValue = (e as MouseWheelEventArgs).Delta;
+
+            this.MouseState = new MouseState((Int32)WPFMouse.Position.X, (Int32)WPFMouse.Position.Y,
+                WPFMouse.MouseScrollWheelValue,
+                this.GetButtonState(e.LeftButton),
+                this.GetButtonState(e.MiddleButton),
+                this.GetButtonState(e.RightButton), ButtonState.Released, ButtonState.Released);
+        }
+
+        private ButtonState GetButtonState(MouseButtonState mouseState)
+        {
+            return mouseState == MouseButtonState.Pressed ? ButtonState.Pressed : ButtonState.Released;
+        }
+
         #endregion
 
         #region EVENTS

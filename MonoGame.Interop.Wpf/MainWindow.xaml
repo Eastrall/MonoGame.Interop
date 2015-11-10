@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MonoGame.Interop.Wpf"
         mc:Ignorable="d"
-        Title="MonoGame.Interop.Wpf by Onyx" Height="350" Width="525">
+        Title="MonoGame.Interop.Wpf" Height="350" Width="525">
     <Grid>
         <local:MainGame SnapsToDevicePixels="true" Stretch="Fill" />
     </Grid>

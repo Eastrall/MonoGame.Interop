@@ -17,6 +17,6 @@
             <Label Content="Stack panel" />
         </StackPanel>
         
-        <local:MainGame Grid.Column="1" SnapsToDevicePixels="true" Stretch="Fill" />
+        <local:MainGame Grid.Column="1" SnapsToDevicePixels="true" />
     </Grid>
 </Window>

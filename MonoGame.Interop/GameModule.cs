@@ -2,81 +2,49 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Interop.Hosting;
+using MonoGame.Interop.Controls;
 using MonoGame.Interop.Input;
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 /*--------------------------------------------------------
  * GameModule.cs
  * 
- * Version: 1.0
+ * Version: 1.1
  * Author: Onyx
  * Created: 07/11/2015 17:27:41
  * 
- * Notes:
- * This 'GameModule' uses some MonoGame game code and 
+ * Credits:
+ * This 'GameModule' uses some MonoGame code 
  * http://blogs.msdn.com/b/nicgrave/archive/2011/03/25/wpf-hosting-for-xna-game-studio-4-0.aspx
+ * DrawingSurface by tgjones (https://github.com/tgjones/gemini/blob/master/src/Gemini.Modules.MonoGame/Controls/DrawingSurface.cs)
+ * 
+ * Notes:
+ * 1.1: Review the game module; now using a DrawingSurface.
+ *
  * -------------------------------------------------------*/
 
 namespace MonoGame.Interop
 {
-    public abstract class GameModule : Image
+    public class GameModule : ContentControl
     {
         #region FIELDS
 
-        // Render image
-        private D3D11Image image;
-        private RenderTarget2D renderTarget;
-        private Boolean resetImageBackBuffer;
-
-        // Game timer
-        private Stopwatch gameTimer;
-        private GameTime gameTime;
-        private TimeSpan lastRenderingTime;
-        private TimeSpan accumulatedElapsedTime;
-        private long previousTicks = 0;
-        private int updateFrameLag;
-
-        private TimeSpan targetElapsedTime = TimeSpan.FromSeconds(1f / 60f); // 60fps
-        private TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500f);
-
-        private Boolean isLoaded;
+        private DrawingSurface drawingSurface;
+        private GameModuleUpdater updater;
 
         #endregion
 
         #region PROPERTIES
 
         /// <summary>
-        /// Gets a value indicating whether the controls runs in the context of a designer (e.g.
-        /// Visual Studio Designer or Expression Blend).
+        /// Gets the graphics device.
         /// </summary>
-        /// <value>
-        /// <see langword="true" /> if controls run in design mode; otherwise, 
-        /// <see langword="false" />.
-        /// </value>
-        public static Boolean IsInDesignMode
+        public GraphicsDevice GraphicsDevice
         {
-            get
-            {
-                if (!_isInDesignMode.HasValue)
-                    _isInDesignMode = (Boolean)DependencyPropertyDescriptor.FromProperty(DesignerProperties.IsInDesignModeProperty, typeof(FrameworkElement)).Metadata.DefaultValue;
-
-                return _isInDesignMode.Value;
-            }
+            get { return this.drawingSurface.GraphicsDevice; }
         }
-        private static bool? _isInDesignMode;
-
-        /// <summary>
-        /// Gets the current GraphicsDevice.
-        /// </summary>
-        public GraphicsDevice GraphicsDevice { get; private set; }
 
         /// <summary>
         /// Gets or sets the current ContentManager.
@@ -98,6 +66,9 @@ namespace MonoGame.Interop
         /// </summary>
         public Boolean IsFixedTimeStep { get; set; }
 
+        /// <summary>
+        /// Gets the mouse state.
+        /// </summary>
         internal MouseState MouseState { get; private set; }
 
         #endregion
@@ -105,357 +76,109 @@ namespace MonoGame.Interop
         #region CONSTRUCTORS
 
         /// <summary>
-        /// Creates a new GameModule instance.
+        /// Creates a new GameModule's instance.
         /// </summary>
         public GameModule()
-            : base()
         {
             this.IsFixedTimeStep = true;
-            this.gameTime = new GameTime();
-            this.gameTimer = new Stopwatch();
-            this.Loaded += this.GameModule_Loaded;
-            this.Unloaded += this.GameModule_Unloaded;
-            
+
+            // Initialize mouse and keyboard parent game module
             WPFMouse.PrimaryGameModule = this;
-            this.MouseMove += this.UpdateMouse;
-            this.MouseDown += this.UpdateMouse;
-            this.MouseUp += this.UpdateMouse;
+            WPFKeyboard.primaryGameModule = this;
+            
+            // Initialize drawing surface
+            this.drawingSurface = new DrawingSurface();
+            this.drawingSurface.Loaded += DrawingSurface_Loaded;
+            this.drawingSurface.Unloaded += DrawingSurface_Unloaded;
+            this.drawingSurface.LoadContent += this.DrawingSurface_LoadContent;
+            this.drawingSurface.Draw += this.DrawingSurface_Draw;
+            this.drawingSurface.MouseMove += this.UpdateMouse;
+            this.drawingSurface.MouseDown += this.UpdateMouse;
+            this.drawingSurface.MouseUp += this.UpdateMouse;
+
+            // Initialize game updater
+            this.updater = new GameModuleUpdater(this, this.Update);
+
+            // Set the drawing surface as the GameModule's content
+            this.Content = this.drawingSurface;
         }
 
+        #endregion
+
+        #region EVENTS METHODS
+
         /// <summary>
-        /// Event raised when the GameModule is fully loaded.
+        /// 
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void GameModule_Loaded(Object sender, RoutedEventArgs e)
+        private void DrawingSurface_Loaded(Object sender, System.Windows.RoutedEventArgs e)
         {
-            if (IsInDesignMode)
-                return;
+            this.BeginRun();
+        }
 
-            this.CreateGraphicsDevice();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DrawingSurface_Unloaded(Object sender, System.Windows.RoutedEventArgs e)
+        {
+            this.EndRun();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DrawingSurface_Draw(Object sender, DrawEventArgs e)
+        {
+            if (this.drawingSurface != null)
+            {
+                this.Draw(this.updater.GameTime);
+                this.drawingSurface.Invalidate();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DrawingSurface_LoadContent(Object sender, GraphicsDeviceEventArgs e)
+        {
             this.Services = new GameServiceContainer();
             this.Components = new GameComponentCollection();
             this.ContentManager = new ContentManager(this.Services);
 
-            Hosting.GraphicsDeviceManager _graphicsDeviceManager = new Hosting.GraphicsDeviceManager(this.GraphicsDevice);
-            this.Services.AddService(typeof(IGraphicsDeviceService), _graphicsDeviceManager);
+            this.Services.AddService(typeof(GraphicsDevice), this.GraphicsDevice);
 
-            this.CreateImageSource();
-            
             this.Initialize();
             this.LoadContent();
-            this.BeginRender();
+            this.BeginRun();
         }
-
-        /// <summary>
-        /// Event raised when the GameModule is unloaded.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void GameModule_Unloaded(Object sender, RoutedEventArgs e)
-        {
-            if (IsInDesignMode)
-                return;
-
-            this.EndRender();
-            this.UnloadContent();
-            this.DisposeImage();
-            this.DisposeRenderTarget();
-            this.DisposeGraphicsDevice();
-        }
-
+        
         #endregion
 
         #region METHODS
 
         /// <summary>
-        /// Creates the <see cref="GraphicsDevice"/>.
+        /// Begin running the game module.
         /// </summary>
-        private void CreateGraphicsDevice()
+        private void BeginRun()
         {
-            // Create Direct3D 11 device.
-            var presentationParameters = new PresentationParameters
-            {
-                // Do not associate graphics device with window.
-                DeviceWindowHandle = IntPtr.Zero,
-            };
-            this.GraphicsDevice = new GraphicsDevice(GraphicsAdapter.DefaultAdapter, 
-                GraphicsProfile.HiDef, 
-                presentationParameters);
+            if (this.updater.IsRunning == false)
+                this.updater.Start();
         }
 
         /// <summary>
-        /// Creates and initialize the image source.
+        /// Ends running the game module.
         /// </summary>
-        private void CreateImageSource()
+        private void EndRun()
         {
-            this.image = new D3D11Image();
-
-            this.image.IsFrontBufferAvailableChanged += Image_IsFrontBufferAvailableChanged;
-            this.CreateImageBackBuffer();
-            this.Source = this.image;
-        }
-
-        /// <summary>
-        /// Creates the image back buffer.
-        /// </summary>
-        private void CreateImageBackBuffer()
-        {
-            Int32 _width = Math.Max((Int32)this.ActualWidth, 1);
-            Int32 _height = Math.Max((Int32)this.ActualHeight, 1);
-
-            // Reset buffer and render target
-            this.image.SetBackBuffer(null);
-            this.DisposeRenderTarget();
-
-            // Create new render target and set it to the image back buffer
-            this.renderTarget = new RenderTarget2D(this.GraphicsDevice, _width, _height, false, SurfaceFormat.Bgr32, DepthFormat.Depth24Stencil8, 0, RenderTargetUsage.DiscardContents, true);
-            this.image.Lock();
-            this.image.SetBackBuffer(this.renderTarget);
-            this.image.Unlock();
-        }
-
-        Task t;
-
-        /// <summary>
-        /// Begin rendering the game.
-        /// </summary>
-        private void BeginRender()
-        {
-            if (this.gameTimer.IsRunning)
-                return;
-
-            CompositionTarget.Rendering += this.Render;
-            this.gameTimer.Start();
-            Task.Factory.StartNew(() =>
-            {
-                while (this.gameTimer.IsRunning)
-                    this.UpdateGameTime();
-            });
-        }
-
-        /// <summary>
-        /// Stop rendering the game.
-        /// </summary>
-        private void EndRender()
-        {
-            if (this.gameTimer.IsRunning == false)
-                return;
-
-            CompositionTarget.Rendering -= this.Render;
-            this.gameTimer.Stop();
-        }
-
-        /// <summary>
-        /// Renders the game.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Render(Object sender, EventArgs e)
-        {
-            if (this.gameTimer.IsRunning == false)
-                return;
-
-            if (this.resetImageBackBuffer == true)
-                this.CreateImageSource();
-
-            RenderingEventArgs _renderingEventArgs = e as RenderingEventArgs;
-            if (this.lastRenderingTime != _renderingEventArgs.RenderingTime || this.resetImageBackBuffer == true)
-            {
-                this.lastRenderingTime = _renderingEventArgs.RenderingTime;
-                this.GraphicsDevice.SetRenderTarget(this.renderTarget);
-                this.Draw(gameTime);
-                this.GraphicsDevice.Flush();
-                this.GraphicsDevice.SetRenderTarget(null);
-            }
-
-            this.image.Invalidate();
-            this.resetImageBackBuffer = false;
-        }
-
-        /// <summary>
-        /// Update the GameTime.
-        /// </summary>
-        /// <remarks>Some of the code of this function is from the MonoGame project (https://github.com/mono/MonoGame/blob/develop/MonoGame.Framework/Game.cs#L426)</remarks>
-        private void UpdateGameTime()
-        {
-            Boolean _gotoRetryTick = false;
-
-            do
-            {
-                _gotoRetryTick = false;
-
-                // Advance the accumulated elapsed time.
-                Int64 _currentTicks = this.gameTimer.Elapsed.Ticks;
-                this.accumulatedElapsedTime += TimeSpan.FromTicks(_currentTicks - this.previousTicks);
-                this.previousTicks = _currentTicks;
-                
-                if (this.IsFixedTimeStep && this.accumulatedElapsedTime < this.targetElapsedTime)
-                {
-                    var _sleepTime = (Int32)(this.targetElapsedTime - this.accumulatedElapsedTime).TotalMilliseconds;
-
-                    System.Threading.Thread.Sleep(_sleepTime);
-                    _gotoRetryTick = true;
-                }
-
-            } while (_gotoRetryTick == true);
-
-            if (this.accumulatedElapsedTime > this.maxElapsedTime)
-                this.accumulatedElapsedTime = this.maxElapsedTime;
-
-            if (this.IsFixedTimeStep)
-            {
-                this.gameTime.ElapsedGameTime = this.targetElapsedTime;
-                var stepCount = 0;
-
-                // Perform as many full fixed length time steps as we can.
-                while (this.accumulatedElapsedTime >= this.targetElapsedTime)
-                {
-                    this.gameTime.TotalGameTime += this.targetElapsedTime;
-                    this.accumulatedElapsedTime -= this.targetElapsedTime;
-                    ++stepCount;
-
-                    this.Update(this.gameTime);
-                }
-
-                //Every update after the first accumulates lag
-                this.updateFrameLag += Math.Max(0, stepCount - 1);
-
-                //If we think we are running slowly, wait until the lag clears before resetting it
-                if (this.gameTime.IsRunningSlowly)
-                {
-                    if (this.updateFrameLag == 0)
-                        this.gameTime.IsRunningSlowly = false;
-                }
-                else if (this.updateFrameLag >= 5)
-                {
-                    //If we lag more than 5 frames, start thinking we are running slowly
-                    this.gameTime.IsRunningSlowly = true;
-                }
-
-                //Every time we just do one update and one draw, then we are not running slowly, so decrease the lag
-                if (stepCount == 1 && this.updateFrameLag > 0)
-                    this.updateFrameLag--;
-
-                // Draw needs to know the total elapsed time
-                // that occured for the fixed length updates.
-                this.gameTime.ElapsedGameTime = TimeSpan.FromTicks(this.targetElapsedTime.Ticks * stepCount);
-            }
-            else
-            {
-                // Perform a single variable length update.
-                this.gameTime.ElapsedGameTime = this.accumulatedElapsedTime;
-                this.gameTime.TotalGameTime += this.accumulatedElapsedTime;
-                this.accumulatedElapsedTime = TimeSpan.Zero;
-
-                this.Update(this.gameTime);
-            }
-        }
-
-        /// <summary>
-        /// Dispose the game render target.
-        /// </summary>
-        private void DisposeRenderTarget()
-        {
-            if (this.renderTarget != null)
-            {
-                this.renderTarget.Dispose();
-                this.renderTarget = null;
-            }
-        }
-
-        /// <summary>
-        /// Dispose the game image.
-        /// </summary>
-        private void DisposeImage()
-        {
-            this.Source = null;
-
-            if (this.image != null)
-            {
-                this.image.IsFrontBufferAvailableChanged -= this.Image_IsFrontBufferAvailableChanged;
-                this.image.Dispose();
-                this.image = null;
-            }
-        }
-
-        /// <summary>
-        /// Dispose the game GraphicsDevice.
-        /// </summary>
-        private void DisposeGraphicsDevice()
-        {
-            if (this.GraphicsDevice != null)
-            {
-                this.GraphicsDevice.Dispose();
-                this.GraphicsDevice = null;
-            }
-        }
-
-        #endregion
-
-        #region INPUT UPDATE
-
-        /// <summary>
-        /// Update mouse state.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void UpdateMouse(Object sender, MouseEventArgs e)
-        {
-            if (this.IsVisible == false || this.IsMouseDirectlyOver == false || e.Handled)
-                return;
-
-            e.Handled = true;
-            WPFMouse.Position = e.GetPosition(this);
-
-            if (e is MouseWheelEventArgs)
-                WPFMouse.MouseScrollWheelValue = (e as MouseWheelEventArgs).Delta;
-
-            this.MouseState = new MouseState((Int32)WPFMouse.Position.X, (Int32)WPFMouse.Position.Y,
-                WPFMouse.MouseScrollWheelValue,
-                this.GetButtonState(e.LeftButton),
-                this.GetButtonState(e.MiddleButton),
-                this.GetButtonState(e.RightButton), ButtonState.Released, ButtonState.Released);
-        }
-
-        /// <summary>
-        /// Converts a <see cref="MouseButtonState"/> into a <see cref="ButtonState"/>.
-        /// </summary>
-        /// <param name="mouseState">Window mouse button state.</param>
-        /// <returns></returns>
-        private ButtonState GetButtonState(MouseButtonState mouseState)
-        {
-            return mouseState == MouseButtonState.Pressed ? ButtonState.Pressed : ButtonState.Released;
-        }
-
-        #endregion
-
-        #region EVENTS
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Image_IsFrontBufferAvailableChanged(Object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (this.image.IsFrontBufferAvailable)
-            {
-                this.BeginRender();
-                this.resetImageBackBuffer = true;
-            }
-            else
-                this.EndRender();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sizeInfo"></param>
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            this.resetImageBackBuffer = true;
-            base.OnRenderSizeChanged(sizeInfo);
+            if (this.updater.IsRunning)
+                this.updater.Stop();
         }
 
         #endregion
@@ -507,6 +230,43 @@ namespace MonoGame.Interop
         protected virtual void Draw(GameTime gameTime)
         {
             // TODO: draw components
+        }
+
+        #endregion
+
+        #region INPUT UPDATE
+
+        /// <summary>
+        /// Update mouse state.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UpdateMouse(Object sender, MouseEventArgs e)
+        {
+            if (this.IsVisible == false || this.IsMouseOver == false || e.Handled)
+                return;
+
+            e.Handled = true;
+            WPFMouse.Position = e.GetPosition(this);
+
+            if (e is MouseWheelEventArgs)
+                WPFMouse.MouseScrollWheelValue = (e as MouseWheelEventArgs).Delta;
+
+            this.MouseState = new MouseState((Int32)WPFMouse.Position.X, (Int32)WPFMouse.Position.Y,
+                WPFMouse.MouseScrollWheelValue,
+                this.GetButtonState(e.LeftButton),
+                this.GetButtonState(e.MiddleButton),
+                this.GetButtonState(e.RightButton), ButtonState.Released, ButtonState.Released);
+        }
+
+        /// <summary>
+        /// Converts a <see cref="MouseButtonState"/> into a <see cref="ButtonState"/>.
+        /// </summary>
+        /// <param name="mouseState">Window mouse button state.</param>
+        /// <returns></returns>
+        private ButtonState GetButtonState(MouseButtonState mouseState)
+        {
+            return mouseState == MouseButtonState.Pressed ? ButtonState.Pressed : ButtonState.Released;
         }
 
         #endregion

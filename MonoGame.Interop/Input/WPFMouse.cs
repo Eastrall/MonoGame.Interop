@@ -1,10 +1,5 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 /*--------------------------------------------------------
@@ -25,7 +20,7 @@ namespace MonoGame.Interop.Input
 
         internal static GameModule PrimaryGameModule = null;
         internal static UIElement UIElement = null;
-        internal static System.Windows.Point Position;
+        internal static Point Position;
         internal static Int32 MouseScrollWheelValue = 0;
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Interop.Wpf.Primitives;
 using System;
@@ -22,6 +23,8 @@ namespace MonoGame.Interop.Wpf
     public class MainGame : GameModule
     {
         private CubePrimitive cube;
+        private SpriteBatch spriteBatch;
+        private Texture2D texture;
 
         public MainGame()
             : base()
@@ -40,6 +43,15 @@ namespace MonoGame.Interop.Wpf
         protected override void LoadContent()
         {
             // TODO: Load content
+            this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
+
+            // Create a black gray texture
+            this.texture = new Texture2D(this.GraphicsDevice, 50, 50);
+            Color[] _data = new Color[50 * 50];
+            this.texture.GetData(_data);
+            for (Int32 i = 0; i < _data.Length; ++i)
+                _data[i] = Color.Gray;
+            this.texture.SetData(_data);
 
             base.LoadContent();
         }
@@ -83,6 +95,11 @@ namespace MonoGame.Interop.Wpf
 
             // Draw a cube
             this.cube.Draw(world, view, projection, Color.Red);
+
+            // Draw a square with the spriteBatch
+            this.spriteBatch.Begin();
+            this.spriteBatch.Draw(this.texture, new Vector2(10, 10), Color.White);
+            this.spriteBatch.End();
 
             base.Draw(gameTime);
         }

@@ -201,7 +201,7 @@ namespace MonoGame.Interop.Input
 
         public static KeyboardState GetState()
         {
-            return PrimaryGameModule.KeyboardState;
+            return (PrimaryGameModule != null) ? PrimaryGameModule.KeyboardState : default(KeyboardState);
         }
     }
 }

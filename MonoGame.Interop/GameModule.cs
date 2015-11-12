@@ -299,22 +299,20 @@ namespace MonoGame.Interop
         /// <param name="e"></param>
         private void UpdateKeyboard(Object sender, KeyEventArgs e)
         {
-            if (this.IsVisible == false || this.IsMouseOver == false || 
-                this.IsKeyboardFocused == false || e.Handled)
-                return;
-
-            e.Handled = true;
-            
-            
-            ICollection<Keys> _keys = new HashSet<Keys>();
-
-            foreach (KeyValuePair<Key, Keys> k in WPFKeyboard.keys)
+            if (this.IsVisible && this.IsMouseOver && 
+                this.IsKeyboardFocused && e.Handled == false)
             {
-                if (e.KeyboardDevice.IsKeyDown(k.Key))
-                    _keys.Add(k.Value);
-            }
+                List<Keys> _keys = new List<Keys>();
 
-            this.KeyboardState = new KeyboardState(_keys.ToArray());
+                foreach (Key key in WPFKeyboard.keys.Keys)
+                {
+                    if (e.KeyboardDevice.IsKeyDown(key))
+                        _keys.Add(WPFKeyboard.keys[key]);
+                }
+
+                e.Handled = true;
+                this.KeyboardState = new KeyboardState(_keys.ToArray());
+            }
         }
 
         #endregion

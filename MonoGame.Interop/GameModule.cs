@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Interop.Controls;
 using MonoGame.Interop.Input;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -33,6 +35,7 @@ namespace MonoGame.Interop
 
         private DrawingSurface drawingSurface;
         private GameModuleUpdater updater;
+        private Boolean focus;
 
         #endregion
 
@@ -71,6 +74,11 @@ namespace MonoGame.Interop
         /// </summary>
         internal MouseState MouseState { get; private set; }
 
+        /// <summary>
+        /// Gets the keyboard state.
+        /// </summary>
+        internal KeyboardState KeyboardState { get; private set; }
+
         #endregion
 
         #region CONSTRUCTORS
@@ -84,7 +92,7 @@ namespace MonoGame.Interop
 
             // Initialize mouse and keyboard parent game module
             WPFMouse.PrimaryGameModule = this;
-            WPFKeyboard.primaryGameModule = this;
+            WPFKeyboard.PrimaryGameModule = this;
             
             // Initialize drawing surface
             this.drawingSurface = new DrawingSurface();
@@ -92,9 +100,13 @@ namespace MonoGame.Interop
             this.drawingSurface.Unloaded += DrawingSurface_Unloaded;
             this.drawingSurface.LoadContent += this.DrawingSurface_LoadContent;
             this.drawingSurface.Draw += this.DrawingSurface_Draw;
+
+            // Initialize mouse and keyboard events handlers
             this.drawingSurface.MouseMove += this.UpdateMouse;
             this.drawingSurface.MouseDown += this.UpdateMouse;
             this.drawingSurface.MouseUp += this.UpdateMouse;
+            this.KeyDown += this.UpdateKeyboard;
+            this.KeyUp += this.UpdateKeyboard;
 
             // Initialize game updater
             this.updater = new GameModuleUpdater(this, this.Update);
@@ -246,6 +258,17 @@ namespace MonoGame.Interop
             if (this.IsVisible == false || this.IsMouseOver == false || e.Handled)
                 return;
 
+            if (!this.focus && IsMouseOver &&
+               e.LeftButton == MouseButtonState.Pressed)
+            {
+                Focus();
+                this.focus = true;
+            }
+            else
+            {
+                this.focus = false;
+            }
+
             e.Handled = true;
             WPFMouse.Position = e.GetPosition(this);
 
@@ -267,6 +290,31 @@ namespace MonoGame.Interop
         private ButtonState GetButtonState(MouseButtonState mouseState)
         {
             return mouseState == MouseButtonState.Pressed ? ButtonState.Pressed : ButtonState.Released;
+        }
+
+        /// <summary>
+        /// Updates the keyboard state.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UpdateKeyboard(Object sender, KeyEventArgs e)
+        {
+            if (this.IsVisible == false || this.IsMouseOver == false || 
+                this.IsKeyboardFocused == false || e.Handled)
+                return;
+
+            e.Handled = true;
+            
+            
+            ICollection<Keys> _keys = new HashSet<Keys>();
+
+            foreach (KeyValuePair<Key, Keys> k in WPFKeyboard.keys)
+            {
+                if (e.KeyboardDevice.IsKeyDown(k.Key))
+                    _keys.Add(k.Value);
+            }
+
+            this.KeyboardState = new KeyboardState(_keys.ToArray());
         }
 
         #endregion

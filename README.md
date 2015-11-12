@@ -1,4 +1,4 @@
-MonoGame.Interop
+MonoGame.Interop 1.0
 ====
 
 MonoGame.Interop is a small library who enables you to use MonoGame into a WPF window.
@@ -10,11 +10,11 @@ MonoGame.Interop handles:
 
 - Rendering (2D and 3D)
 - Mouse input
+- Keyboard input
 
 To do list
 ----
 
-- Keyboard input
 - Component system (similar as MonoGame's system)
 - General improvements
 

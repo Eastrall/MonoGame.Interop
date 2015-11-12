@@ -60,6 +60,8 @@ namespace MonoGame.Interop.Wpf
         protected override void Update(GameTime gameTime)
         {
             // TODO: Update logic
+
+            // Mouse input
             MouseState _state = Input.WPFMouse.GetState();
 
             if (_state.LeftButton == ButtonState.Pressed && _state.RightButton == ButtonState.Released)
@@ -70,6 +72,12 @@ namespace MonoGame.Interop.Wpf
                 this.backcolor = Color.Blue;
             else
                 this.backcolor = Color.CornflowerBlue;
+
+            // Keyboard input
+            KeyboardState _keyboardState = Input.WPFKeyboard.GetState();
+
+            if (_keyboardState.IsKeyDown(Keys.A) && _keyboardState.IsKeyDown(Keys.Z))
+                this.backcolor = Color.Black;
 
             base.Update(gameTime);
         }

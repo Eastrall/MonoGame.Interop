@@ -70,7 +70,7 @@ namespace MonoGame.Interop.Services
 
             graphicsDevice = new GraphicsDevice(
                 GraphicsAdapter.DefaultAdapter,
-                GraphicsProfile.Reach,
+                GraphicsProfile.HiDef,
                 parameters);
 
             if (DeviceCreated != null)

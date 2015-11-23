@@ -105,6 +105,7 @@ namespace MonoGame.Interop
             this.drawingSurface.MouseMove += this.UpdateMouse;
             this.drawingSurface.MouseDown += this.UpdateMouse;
             this.drawingSurface.MouseUp += this.UpdateMouse;
+            this.drawingSurface.MouseWheel += this.UpdateMouse;
             this.KeyDown += this.UpdateKeyboard;
             this.KeyUp += this.UpdateKeyboard;
 

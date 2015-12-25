@@ -199,6 +199,10 @@ namespace MonoGame.Interop.Input
             { Key.Zoom, Keys.Zoom }
         };
 
+        /// <summary>
+        /// Gets current keyboard state.
+        /// </summary>
+        /// <returns></returns>
         public static KeyboardState GetState()
         {
             return (PrimaryGameModule != null) ? PrimaryGameModule.KeyboardState : default(KeyboardState);

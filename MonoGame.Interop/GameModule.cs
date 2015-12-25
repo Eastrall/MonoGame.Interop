@@ -274,7 +274,7 @@ namespace MonoGame.Interop
             WPFMouse.Position = e.GetPosition(this);
 
             if (e is MouseWheelEventArgs)
-                WPFMouse.MouseScrollWheelValue = (e as MouseWheelEventArgs).Delta;
+                WPFMouse.MouseScrollWheelValue += (e as MouseWheelEventArgs).Delta;
 
             this.MouseState = new MouseState((Int32)WPFMouse.Position.X, (Int32)WPFMouse.Position.Y,
                 WPFMouse.MouseScrollWheelValue,

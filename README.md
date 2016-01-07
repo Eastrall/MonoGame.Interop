@@ -23,6 +23,21 @@ How to use
 
 Tutorial incoming.
 
+Remarks
+----
+
+Since the GameModule inherits from a ContentControl, it seems the window has some troubles disposing it and calling the ```UnloadContent()``` method to unload the game content.
+To avoid some error, I recommend calling the ```Dispose()``` method of the GameModule in the hosting window on closing event like this:
+
+```
+        protected override void OnClosed(EventArgs e)
+        {
+            this.MAIN_GAME.Dispose();
+            base.OnClosed(e);
+        }
+		```
+
+
 Credits
 ----
 

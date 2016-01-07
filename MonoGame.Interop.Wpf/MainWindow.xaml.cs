@@ -25,9 +25,20 @@ namespace MonoGame.Interop.Wpf
             InitializeComponent();
         }
 
+        protected override void OnClosed(EventArgs e)
+        {
+            this.MAIN_GAME.Dispose();
+            base.OnClosed(e);
+        }
+
         private void OPEN_WIN_Click(Object sender, RoutedEventArgs e)
         {
             new NewWindow().ShowDialog();
+        }
+
+        private void UNLOAD_Click(Object sender, RoutedEventArgs e)
+        {
+            this.MAIN_GAME.Content = null;
         }
     }
 }

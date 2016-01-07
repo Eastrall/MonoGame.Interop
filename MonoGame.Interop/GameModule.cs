@@ -9,12 +9,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows;
 
 /*--------------------------------------------------------
  * GameModule.cs
  * 
  * Version: 1.1
- * Author: Onyx
+ * Author: Filipe
  * Created: 07/11/2015 17:27:41
  * 
  * Credits:
@@ -29,7 +30,7 @@ using System.Windows.Input;
 
 namespace MonoGame.Interop
 {
-    public class GameModule : ContentControl
+    public partial class GameModule : ContentControl
     {
         #region FIELDS
 
@@ -102,10 +103,10 @@ namespace MonoGame.Interop
             this.drawingSurface.Draw += this.DrawingSurface_Draw;
 
             // Initialize mouse and keyboard events handlers
-            this.drawingSurface.MouseMove += this.UpdateMouse;
-            this.drawingSurface.MouseDown += this.UpdateMouse;
-            this.drawingSurface.MouseUp += this.UpdateMouse;
-            this.drawingSurface.MouseWheel += this.UpdateMouse;
+            this.MouseMove += this.UpdateMouse;
+            this.MouseDown += this.UpdateMouse;
+            this.MouseUp += this.UpdateMouse;
+            this.MouseWheel += this.UpdateMouse;
             this.KeyDown += this.UpdateKeyboard;
             this.KeyUp += this.UpdateKeyboard;
 
@@ -194,6 +195,16 @@ namespace MonoGame.Interop
                 this.updater.Stop();
         }
 
+        /// <summary>
+        /// Dispose the game module.
+        /// </summary>
+        public void Dispose()
+        {
+            this.drawingSurface.Dispose();
+            this.EndRun();
+            this.UnloadContent();
+        }
+
         #endregion
 
         #region VIRTUAL
@@ -259,22 +270,19 @@ namespace MonoGame.Interop
             if (this.IsVisible == false || this.IsMouseOver == false || e.Handled)
                 return;
 
-            if (!this.focus && IsMouseOver &&
-               e.LeftButton == MouseButtonState.Pressed)
+            if (!this.focus && IsMouseOver && e.LeftButton == MouseButtonState.Pressed)
             {
                 Focus();
                 this.focus = true;
             }
             else
-            {
                 this.focus = false;
-            }
 
             e.Handled = true;
-            WPFMouse.Position = e.GetPosition(this);
+            WPFMouse.Position = e.GetPosition(this.drawingSurface);
 
             if (e is MouseWheelEventArgs)
-                WPFMouse.MouseScrollWheelValue += (e as MouseWheelEventArgs).Delta;
+                WPFMouse.MouseScrollWheelValue += ((MouseWheelEventArgs)e).Delta;
 
             this.MouseState = new MouseState((Int32)WPFMouse.Position.X, (Int32)WPFMouse.Position.Y,
                 WPFMouse.MouseScrollWheelValue,

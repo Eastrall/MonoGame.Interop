@@ -13,7 +13,7 @@ using System.Windows.Input;
  * WPFKeyboard.cs
  * 
  * Version: 1.0
- * Author: Onyx
+ * Author: Filipe
  * Created: 08/11/2015 14:56:05
  * 
  * Notes:

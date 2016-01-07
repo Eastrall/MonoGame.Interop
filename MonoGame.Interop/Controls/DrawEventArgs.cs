@@ -10,7 +10,7 @@ using System.Threading.Tasks;
  * DrawEventArgs.cs
  * 
  * Version: 1.0
- * Author: Onyx
+ * Author: Filipe
  * Created: 11/11/2015 11:23:21
  * 
  * Notes:

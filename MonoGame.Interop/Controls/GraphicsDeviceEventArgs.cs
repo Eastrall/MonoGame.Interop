@@ -5,7 +5,7 @@ using System;
  * GraphicsDeviceEventArgs.cs
  * 
  * Version: 1.0
- * Author: Onyx
+ * Author: Filipe
  * Created: 11/11/2015 11:21:15
  * 
  * Notes:

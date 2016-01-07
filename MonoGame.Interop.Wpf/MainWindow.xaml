@@ -17,8 +17,8 @@
             <Label Content="Stack panel" />
 
             <Button x:Name="OPEN_WIN" Content="Open new window" Click="OPEN_WIN_Click" />
+            <Button x:Name="UNLOAD" Content="Unload 1st container" Click="UNLOAD_Click" />
         </StackPanel>
-
 
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
@@ -26,12 +26,10 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <local:MainGame Grid.Row="0" SnapsToDevicePixels="true" />
-            
+            <local:MainGame x:Name="MAIN_GAME" Grid.Row="0" SnapsToDevicePixels="true" />
+
             <local:OtherMainGame Grid.Row="1" SnapsToDevicePixels="true" />
 
-
         </Grid>
-        
     </Grid>
 </Window>

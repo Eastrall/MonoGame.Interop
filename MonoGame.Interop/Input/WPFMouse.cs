@@ -6,7 +6,7 @@ using System.Windows;
  * WPFMouse.cs
  * 
  * Version: 1.0
- * Author: Onyx
+ * Author: Filipe
  * Created: 08/11/2015 15:06:35
  * 
  * Notes:

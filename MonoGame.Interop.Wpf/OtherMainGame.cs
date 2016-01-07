@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Interop.Wpf.Primitives;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,6 +64,8 @@ namespace MonoGame.Interop.Wpf
 
             // Mouse input
             MouseState _state = Input.WPFMouse.GetState();
+
+            Debug.WriteLine("OtherMainGame: Mouse position: {0}, {1}", _state.X, _state.Y);
 
             if (_state.LeftButton == ButtonState.Pressed && _state.RightButton == ButtonState.Released)
                 this.backcolor = Color.Green;

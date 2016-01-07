@@ -55,6 +55,7 @@
     <Compile Include="Controls\GraphicsDeviceEventArgs.cs" />
     <Compile Include="GameModule.cs" />
     <Compile Include="GameModuleUpdater.cs" />
+    <Compile Include="GameModuleUpdaterOld.cs" />
     <Compile Include="Input\WPFKeyboard.cs" />
     <Compile Include="Input\WPFMouse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

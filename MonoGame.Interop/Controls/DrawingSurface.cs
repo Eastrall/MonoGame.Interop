@@ -2,6 +2,7 @@
 using MonoGame.Interop.Services;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -12,7 +13,7 @@ using DTexture = SharpDX.Direct3D9.Texture;
  * DrawingSurface.cs
  * 
  * Version: 1.0
- * Author: Onyx
+ * Author: Filipe
  * Created: 10/11/2015 19:42:31
  * 
  * Notes:
@@ -173,24 +174,32 @@ namespace MonoGame.Interop.Controls
         {
             if (this.renderTarget == null)
             {
-                this.renderTarget = new RenderTarget2D(this.GraphicsDevice, (int)ActualWidth, (int)ActualHeight,
-                    false, SurfaceFormat.Bgra32, DepthFormat.Depth24Stencil8, 1,
-                    RenderTargetUsage.PlatformContents, true);
-
-                var handle = this.renderTarget.GetSharedHandle();
-                if (handle == IntPtr.Zero)
-                    throw new ArgumentException("Handle could not be retrieved");
-
-                this.renderTargetD3D9 = new DTexture(DeviceService.D3DDevice,
-                    this.renderTarget.Width, this.renderTarget.Height,
-                    1, SharpDX.Direct3D9.Usage.RenderTarget, SharpDX.Direct3D9.Format.A8R8G8B8,
-                    SharpDX.Direct3D9.Pool.Default, ref handle);
-
-                using (SharpDX.Direct3D9.Surface surface = this.renderTargetD3D9.GetSurfaceLevel(0))
+                try
                 {
-                    this.d3dimage.Lock();
-                    this.d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
-                    this.d3dimage.Unlock();
+                    this.renderTarget = new RenderTarget2D(this.GraphicsDevice, (int)ActualWidth, (int)ActualHeight,
+                        false, SurfaceFormat.Bgra32, DepthFormat.Depth24Stencil8, 1,
+                        RenderTargetUsage.PlatformContents, true);
+
+                    var handle = this.renderTarget.GetSharedHandle();
+                    if (handle == IntPtr.Zero)
+                        throw new ArgumentException("Handle could not be retrieved");
+
+                    this.renderTargetD3D9 = new DTexture(DeviceService.D3DDevice,
+                        this.renderTarget.Width, this.renderTarget.Height,
+                        1, SharpDX.Direct3D9.Usage.RenderTarget, SharpDX.Direct3D9.Format.A8R8G8B8,
+                        SharpDX.Direct3D9.Pool.Default, ref handle);
+
+                    using (SharpDX.Direct3D9.Surface surface = this.renderTargetD3D9.GetSurfaceLevel(0))
+                    {
+                        this.d3dimage.Lock();
+                        this.d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
+                        this.d3dimage.Unlock();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine("An error occured while creating the render target");
+                    this.renderTarget = null;   
                 }
             }
         }

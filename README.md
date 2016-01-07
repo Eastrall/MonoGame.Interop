@@ -30,13 +30,14 @@ Since the GameModule inherits from a ContentControl, it seems the window has som
 To avoid some error, I recommend calling the ```Dispose()``` method of the GameModule in the hosting window on closing event like this:
 
 ```
-        protected override void OnClosed(EventArgs e)
-        {
-            this.MAIN_GAME.Dispose();
-            base.OnClosed(e);
-        }
-		```
+protected override void OnClosed(EventArgs e)
+{
+        this.MAIN_GAME.Dispose();
+        base.OnClosed(e);
+}
+```
 
+This is a temporary fix until I find a new one. If you find one, feel free to do a PR :)
 
 Credits
 ----

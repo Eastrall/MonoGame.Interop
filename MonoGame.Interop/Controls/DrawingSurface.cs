@@ -67,7 +67,7 @@ namespace MonoGame.Interop.Controls
         /// </summary>
         public GraphicsDevice GraphicsDevice
         {
-            get { return this.graphicsDeviceService.GraphicsDevice; }
+            get { return this.graphicsDeviceService != null ? this.graphicsDeviceService.GraphicsDevice : null; }
         }
 
         /// <summary>
